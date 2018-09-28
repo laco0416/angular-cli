@@ -19,10 +19,12 @@ export default function () {
     return Promise.resolve();
   }
 
+  let httpVersion = readNgVersion();
   let platformServerVersion = readNgVersion();
 
   if (getGlobalVariable('argv')['ng-snapshots']) {
     platformServerVersion = 'github:angular/platform-server-builds';
+    httpVersion = 'github:angular/http-builds';
   }
 
   // Skip this test in Angular 2/4.
@@ -34,6 +36,8 @@ export default function () {
     .then(() => updateJsonFile('package.json', packageJson => {
       const dependencies = packageJson['dependencies'];
       dependencies['@angular/platform-server'] = platformServerVersion;
+      // ServerModule depends on @angular/http regardless the app's dependency.
+      dependencies['@angular/http'] = httpVersion;
     }))
     .then(() => updateJsonFile('angular.json', workspaceJson => {
       const appArchitect = workspaceJson.projects['test-project'].architect;
